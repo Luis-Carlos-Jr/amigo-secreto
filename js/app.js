@@ -45,7 +45,7 @@ function adicionar() {
     lista.push(nome);
 
     // Pega o elemento para exibir a lista de amigos.
-    const listaAmigosElement = document.getElementById('lista-amigos');
+    let listaAmigosElement = document.getElementById('lista-amigos');
     listaAmigosElement.textContent = lista.join(', '); // .join() cuida das vírgulas automaticamente.
 
     // Limpa o campo de texto e devolve o foco para ele.
@@ -77,7 +77,7 @@ function sortear() {
     embaralhar(lista);
 
     // Pega o elemento onde o resultado do sorteio será exibido.
-    const listaSorteioElement = document.getElementById('lista-sorteio');
+    let listaSorteioElement = document.getElementById('lista-sorteio');
     // Limpa o resultado de sorteios anteriores.
     listaSorteioElement.innerHTML = '';
 
@@ -85,8 +85,8 @@ function sortear() {
     for (let i = 0; i < lista.length; i++) {
         // O amigo sorteado é o próximo da lista.
         // Se for o último, ele sorteia o primeiro, fechando o ciclo.
-        const amigoSecretoIndex = (i + 1) % lista.length;
-        const amigoSecreto = lista[amigoSecretoIndex];
+        let amigoSecretoIndex = (i + 1) % lista.length;
+        let amigoSecreto = lista[amigoSecretoIndex];
 
         // Exibe o par na tela.
         listaSorteioElement.innerHTML += `${lista[i]} ==> ${amigoSecreto}<br>`;
@@ -98,7 +98,7 @@ function embaralhar(array) {
     // Percorre o array de trás para frente.
     for (let i = array.length - 1; i > 0; i--) {
         // Escolhe um índice aleatório entre 0 e a posição atual.
-        const j = Math.floor(Math.random() * (i + 1));
+        let j = Math.floor(Math.random() * (i + 1));
         // Troca o elemento atual com o elemento do índice aleatório.
         [array[i], array[j]] = [array[j], array[i]];
     }
