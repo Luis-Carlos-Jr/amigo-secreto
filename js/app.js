@@ -1,78 +1,112 @@
-let lista = []; // Lista de participantes
+/*
+Resumo dos comentários:
+- O código gerencia uma lista de participantes para um sorteio de amigo secreto.
+- Permite adicionar nomes, reiniciar a lista, e realizar o sorteio garantindo que ninguém tire a si mesmo.
+- Utiliza o algoritmo Fisher-Yates para embaralhar a lista.
+- Manipula o DOM para mostrar os participantes e o resultado do sorteio.
+*/
 
-// Função para adicionar um participante à lista
-function adicionar(){
-    // Captura o nome inserido no input
-    let nome = document.getElementById('nome-amigo').value;
-    // Limpa o campo de input
-    document.getElementById('nome-amigo').value = '';
+// Array global que armazena a lista de amigos.
+let lista = [];
 
-    // Verifica se o nome está vazio
+// Adiciona um "ouvinte" para a tecla Enter no campo de nome.
+document.getElementById('nome-amigo').addEventListener('keydown', function(event) {
+    // Verifica se a tecla pressionada foi 'Enter'.
+    if (event.key === 'Enter') {
+        // Impede o comportamento padrão do formulário (recarregar a página).
+        event.preventDefault();
+        // Chama a função para adicionar o amigo.
+        adicionar();
+    }
+});
+
+// Função para adicionar um amigo.
+function adicionar() {
+    // Pega o elemento do campo de texto e o nome digitado.
+    let nomeInput = document.getElementById('nome-amigo');
+    let nome = nomeInput.value;
+
+    // Se o nome estiver vazio, mostra um alerta e para a função.
     if (nome === '') {
         alert('Digite um nome válido!');
-        document.getElementById('nome-amigo').focus(); // Mantém o foco no input
-        return;
-    // Verifica se o nome já está na lista
-    }else if(lista.includes(nome)){
+        nomeInput.focus(); // Devolve o foco ao campo.
+        return; // Para a execução da função.
+    }
+
+    // Se o nome já existir na lista, mostra um alerta e para a função.
+    if (lista.some(amigo => amigo.toLowerCase() === nome.toLowerCase())) {
         alert('Este nome já está inserido na lista!');
-        document.getElementById('nome-amigo').focus(); // Mantém o foco no input
-        return;
-    // Se já houver participantes, adiciona com vírgula
-    }else if(lista.length >= 1){
-        document.getElementById('lista-amigos').innerHTML += ', '+nome;
-    // Se for o primeiro participante, adiciona sem vírgula
-    }else{
-        document.getElementById('lista-amigos').innerHTML += nome;
+        nomeInput.value = ''; // Limpa o campo para nova tentativa.
+        nomeInput.focus();
+        return; //para a função
     }
 
-    // Adiciona o nome à lista
+    // Adiciona o nome ao final do array.
     lista.push(nome);
-    document.getElementById('nome-amigo').focus(); // Mantém o foco após adicionar
+
+    // Pega o elemento para exibir a lista de amigos.
+    const listaAmigosElement = document.getElementById('lista-amigos');
+    listaAmigosElement.textContent = lista.join(', '); // .join() cuida das vírgulas automaticamente.
+
+    // Limpa o campo de texto e devolve o foco para ele.
+    nomeInput.value = '';
+    nomeInput.focus();
 }
 
-// Função para reiniciar a lista e limpar os campos
-function reiniciar(){
-    document.getElementById('lista-amigos').innerHTML = ''; // Limpa a lista de amigos
-    lista = []; // Reseta a lista de participantes
-    document.getElementById('lista-sorteio').innerHTML = ''; // Limpa o resultado do sorteio
-    document.getElementById('nome-amigo').value = ''; // Limpa o campo de input
+// Função para reiniciar o sorteio.
+function reiniciar() {
+    // Esvazia o array de amigos.
+    lista = [];
+    // Limpa a lista de amigos na tela.
+    document.getElementById('lista-amigos').innerHTML = '';
+    // Limpa o resultado do sorteio na tela.
+    document.getElementById('lista-sorteio').innerHTML = '';
+    // Limpa o campo de texto.
+    document.getElementById('nome-amigo').value = '';
 }
 
-// Função para sortear os amigos secretos
-function sortear(){
-    // Verifica se há pelo menos 3 participantes
-    if(lista.length < 3){
-        alert('Deve haver ao menos 3 participantes no sorteio!');
+// Função para realizar o sorteio.
+function sortear() {
+    // Verifica se há participantes suficientes para o sorteio.
+    if (lista.length < 3) {
+        alert('É necessário ter pelo menos 3 amigos para o sorteio!');
         return;
     }
-    // Cria cópias embaralhadas da lista de participantes
-    let participantes = embaralhar([...lista]);
-    let disponiveis = embaralhar([...lista]);
-    document.getElementById('lista-sorteio').innerHTML = ''; // Limpa o campo de sorteio
 
-    // Realiza o sorteio para cada participante
-    for(let pIndex = 0; pIndex < participantes.length; pIndex++){
-        let sorteio, sorteado;
-        // Garante que o participante não tire ele mesmo
-        do {
-            sorteio = parseInt(Math.random()*disponiveis.length);
-            sorteado = disponiveis[sorteio];
-        } while (sorteado === participantes[pIndex]  && disponiveis.length > 1);
+    // Embaralha a lista de amigos para garantir a aleatoriedade.
+    embaralhar(lista);
 
-        // Remove o sorteado da lista de disponíveis
-        disponiveis = disponiveis.filter(nome => nome !== sorteado);
+    // Pega o elemento onde o resultado do sorteio será exibido.
+    const listaSorteioElement = document.getElementById('lista-sorteio');
+    // Limpa o resultado de sorteios anteriores.
+    listaSorteioElement.innerHTML = '';
 
-        // Exibe o resultado do sorteio
-        document.getElementById('lista-sorteio').innerHTML += `${participantes[pIndex]} ==> ${sorteado}<br>`;
+    // Para cada amigo na lista, sorteia um par.
+    for (let i = 0; i < lista.length; i++) {
+        // O amigo sorteado é o próximo da lista.
+        // Se for o último, ele sorteia o primeiro, fechando o ciclo.
+        const amigoSecretoIndex = (i + 1) % lista.length;
+        const amigoSecreto = lista[amigoSecretoIndex];
+
+        // Exibe o par na tela.
+        listaSorteioElement.innerHTML += `${lista[i]} ==> ${amigoSecreto}<br>`;
     }
 }
 
-// Função para embaralhar uma lista (algoritmo de Fisher-Yates)
-function embaralhar(lista) {
-    for (let i = lista.length - 1; i > 0; i--) {
+// Função para embaralhar os elementos de um array (algoritmo de Fisher-Yates).
+function embaralhar(array) {
+    // Percorre o array de trás para frente.
+    for (let i = array.length - 1; i > 0; i--) {
+        // Escolhe um índice aleatório entre 0 e a posição atual.
         const j = Math.floor(Math.random() * (i + 1));
-        [lista[i], lista[j]] = [lista[j], lista[i]];
+        // Troca o elemento atual com o elemento do índice aleatório.
+        [array[i], array[j]] = [array[j], array[i]];
     }
-    return lista;
+    return array;
 }
 
+// Função para converter todos os nomes da lista para letras minúsculas.
+// OBS: Esta função não está sendo usada no código.
+function listaParaLowercase() {
+    lista = lista.map(nome => nome.toLowerCase());
+}
